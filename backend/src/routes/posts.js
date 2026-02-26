@@ -17,9 +17,9 @@ export function postsRoutes(app) {
             if (author && tag) {
                 return res.status(400).json({ error: 'query by either author or tag, not both' })
             } else if (author) {
-                return res.json(await listPostsByAuthor(tag, options))
+                return res.json(await listPostsByAuthor(author, options))
             } else if (tag) {
-                return res.json(await listPostsByTag(options))
+                return res.json(await listPostsByTag(tag, options))
             } else {
                 return res.json(await listAllPosts(options))
             }
