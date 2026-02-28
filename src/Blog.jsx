@@ -6,6 +6,13 @@ import { PostSorting } from './components/PostSorting'
 import { getPosts } from './api/posts.js'
 import { useState } from 'react'
 
+/*
+    TODO:
+    - Filter by Tags
+    - Add delete functionality
+    - Add update functionality
+*/
+
 export function Blog() {
     const [author, setAuthor] = useState('')
     const [sortBy, setSortBy] = useState('createdAt')
