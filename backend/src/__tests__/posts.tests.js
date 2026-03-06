@@ -10,12 +10,27 @@ import {
     deletePost,
 } from '../services/posts.js'
 import { Post } from '../db/models/post.js'
+import { User } from '../db/models/user.js'
+
+const sampleUser = {
+    username: 'jjabides',
+    password: 'password',
+}
+
+let createdSampleUser
+
+beforeEach(async () => {
+    await User.deleteMany() // Clear out database
+    const createdUser = new User(sampleUser)
+    createdSampleUser = await createdUser.save()
+})
 
 describe('creating posts', () => {
     test('with all parameters should succeed', async () => {
+        console.info(createdSampleUser)
         const post = {
             title: 'Hello Mongoose!',
-            author: 'Daniel Bugl',
+            author: createdSampleUser._id,
             contents: 'This post is stored in a mongoDB database using Mongoose.',
             tags: ['mongoose', 'mongodb'],
         }
@@ -31,12 +46,13 @@ describe('creating posts', () => {
         expect(foundPost).toEqual(expect.objectContaining(post))
         expect(foundPost.createdAt).toBeInstanceOf(Date)
         expect(foundPost.updatedAt).toBeInstanceOf(Date)
+        expect(foundPost.author).toBeInstanceOf(mongoose.Types.ObjectId)
     })
 
     // Test creating a post without a title (required)
     test('without title should fail', async () => {
         const post = {
-            author: 'Daniel Bugl',
+            author: createdSampleUser._id,
             contents: 'Post with no title',
             tags: ['empty'],
         }
@@ -52,6 +68,7 @@ describe('creating posts', () => {
     test('with minimal parameters should succeed', async () => {
         const post = {
             title: 'Only a title',
+            author: createdSampleUser._id,
         }
         const createdPost = await createPost(post)
         expect(createdPost._id).toBeInstanceOf(mongoose.Types.ObjectId)
@@ -68,9 +85,10 @@ const samplePosts = [
 let createdSamplePosts = []
 
 beforeEach(async () => {
-    await Post.deleteMany({}) // Clear out database
+    await Post.deleteMany() // Clear out database
     createdSamplePosts = []
     for (const post of samplePosts) {
+        post.author = createdSampleUser._id
         const createdPost = new Post(post)
         // Add sample data to database and retreive posts with attached metadata
         createdSamplePosts.push(await createdPost.save())
@@ -99,7 +117,7 @@ describe('listing posts', () => {
     })
 
     test('should be able to filter posts by author', async () => {
-        const posts = await listPostsByAuthor('Daniel Bugl')
+        const posts = await listPostsByAuthor(createdSampleUser._id)
         expect(posts.length).toBe(3)
     })
 
