@@ -1,23 +1,20 @@
-# Modern Full-Stack React Projects / Chapter 1
-
 _Preparing For Full-Stack Development_
 
 ## Requirements
 
 Please install the following, if you do not already have them installed:
 
-- Node.js v20.10.0
-- Git v2.43.0
-- Visual Studio Code v1.84.2
-
-The versions listed above are the ones used in the book. While installing a newer version should not be an issue, please note that certain steps might work differently on a newer version. If you are having an issue with the code and steps provided in this book, please try using the mentioned versions.
+-   Node.js v20.10.0
+-   Git v2.43.0
+-   Docker v4.61.0 or later
 
 ## Install
 
-If you cloned the full repository for the book, Husky may not find the `.git` directory when running `npm install`. In that case, just run `git init` in the root of the corresponding chapter folder.
+Copy contents of .env.example file into your own .env file for current directory and /backend
+
+You must provide your own database connection string
 
 ```bash
-git init
 npm install
 ```
 
@@ -26,5 +23,12 @@ npm install
 To start the app in development mode, run the following command:
 
 ```bash
+npm run dev
+```
+
+For the backend, navigate to /backend and run npm run dev:
+
+```bash
+cd /backend
 npm run dev
 ```
