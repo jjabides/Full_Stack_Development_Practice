@@ -36,7 +36,7 @@ describe('creating posts', () => {
         }
 
         // Testing createPost
-        const createdPost = await createPost(post)
+        const createdPost = await createPost(createdSampleUser._id, post)
         expect(createdPost._id).toBeInstanceOf(mongoose.Types.ObjectId) // verify that _id is an instance of ObjectId
 
         // Retreive post
@@ -58,7 +58,7 @@ describe('creating posts', () => {
         }
 
         try {
-            await createPost(post)
+            await createPost(createdSampleUser._id, post)
         } catch (err) {
             expect(err).toBeInstanceOf(mongoose.Error.ValidationError)
             expect(err.message).toContain('`title` is required')
@@ -70,15 +70,15 @@ describe('creating posts', () => {
             title: 'Only a title',
             author: createdSampleUser._id,
         }
-        const createdPost = await createPost(post)
+        const createdPost = await createPost(createdSampleUser._id, post)
         expect(createdPost._id).toBeInstanceOf(mongoose.Types.ObjectId)
     })
 })
 
 const samplePosts = [
-    { title: 'Learning Redux', author: 'Daniel Bugl', tags: ['redux'] },
-    { title: 'Learning React Hooks', author: 'Daniel Bugl', tags: ['react'] },
-    { title: 'Full-Stack React Projects', author: 'Daniel Bugl', tags: ['react', 'nodejs', 'mongodb'] },
+    { title: 'Learning Redux', tags: ['redux'] },
+    { title: 'Learning React Hooks', tags: ['react'] },
+    { title: 'Full-Stack React Projects', tags: ['react', 'nodejs', 'mongodb'] },
     { title: 'Guide to TypeScript' },
 ]
 
@@ -117,8 +117,8 @@ describe('listing posts', () => {
     })
 
     test('should be able to filter posts by author', async () => {
-        const posts = await listPostsByAuthor(createdSampleUser._id)
-        expect(posts.length).toBe(3)
+        const posts = await listPostsByAuthor(createdSampleUser.username)
+        expect(posts.length).toBe(4)
     })
 
     test('should be able to filter posts by tag', async () => {
@@ -141,16 +141,16 @@ describe('getting a post', () => {
 
 describe('updating posts', () => {
     test('should update the specified property', async () => {
-        await updatePost(createdSamplePosts[0]._id, {
-            author: 'Test Author',
+        await updatePost(createdSampleUser._id, createdSamplePosts[0]._id, {
+            contents: 'Test Contents',
         })
-        const updatedPost = await Post.findById(createdSamplePosts[0]._id) // Why not use getPostById()?
-        expect(updatedPost.author).toEqual('Test Author')
+        const updatedPost = await Post.findById(createdSamplePosts[0]._id)
+        expect(updatedPost.contents).toEqual('Test Contents')
     })
 
     test('should not update other properties', async () => {
-        await updatePost(createdSamplePosts[0]._id, {
-            author: 'Test Author',
+        await updatePost(createdSampleUser._id, createdSamplePosts[0]._id, {
+            contents: 'Test Contents',
         })
         const updatedPost = await Post.findById(createdSamplePosts[0]._id)
         expect(updatedPost.title).toEqual('Learning Redux')
@@ -158,16 +158,16 @@ describe('updating posts', () => {
     })
 
     test('should update the updatedAt timestamp', async () => {
-        await updatePost(createdSamplePosts[0]._id, {
-            author: 'Test Author',
+        await updatePost(createdSampleUser._id, createdSamplePosts[0]._id, {
+            contents: 'Test Contents',
         })
         const updatedPost = await Post.findById(createdSamplePosts[0]._id)
         expect(updatedPost.updatedAt.getTime()).toBeGreaterThan(createdSamplePosts[0].updatedAt.getTime())
     })
 
     test('should fail if the id does not exist', async () => {
-        const post = await updatePost('000000000000000000000000', {
-            author: 'Test Author',
+        const post = await updatePost(createdSampleUser._id, '000000000000000000000000', {
+            contents: 'Test Contents',
         })
         expect(post).toEqual(null)
     })
@@ -175,14 +175,14 @@ describe('updating posts', () => {
 
 describe('deleting posts', () => {
     test('should remove the post from the database', async () => {
-        const result = await deletePost(createdSamplePosts[0]._id)
+        const result = await deletePost(createdSampleUser._id, createdSamplePosts[0]._id)
         expect(result.deletedCount).toEqual(1)
         const deletedPost = await Post.findById(createdSamplePosts[0]._id)
         expect(deletedPost).toEqual(null)
     })
 
     test('should fail if the id does not exist', async () => {
-        const result = await deletePost('000000000000000000000000')
+        const result = await deletePost(createdSampleUser._id, '000000000000000000000000')
         expect(result.deletedCount).toEqual(0)
     })
 })
