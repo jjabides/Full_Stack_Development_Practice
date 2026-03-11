@@ -5,6 +5,7 @@ on:
             - main
 jobs:
     deploy:
+        if: false
         runs-on: ubuntu-latest
         environment:
             name: production
