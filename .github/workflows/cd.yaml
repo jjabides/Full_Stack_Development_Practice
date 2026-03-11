@@ -39,6 +39,7 @@ jobs:
               with:
                   context: .
                   file: ./Dockerfile
+                  no-cache: true
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/blog-frontend:latest
                   build-args: VITE_BACKEND_URL=${{ steps.deploy-backend.outputs.url }}/api/v1
