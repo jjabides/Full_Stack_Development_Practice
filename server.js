@@ -8,6 +8,30 @@ dotenv.config()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+async function createProdServer() {
+    const app = express()
+
+    app.use((await import('compression')).default())
+    app.use(
+        (await import('serve-static')).default(path.resolve(__dirname, 'dist/client'), {
+            index: false,
+        }),
+    )
+    app.use('*', async (req, res, next) => {
+        try {
+            let template = fs.readFileSync(path.resolve(__dirname, 'dist/client/index.html'), 'utf-8')
+            const render = (await import('./dist/server/entry-server.js')).render
+            const appHtml = await render(req)
+            const html = template.replace(`<!--ssr-outlet-->`, appHtml)
+            res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
+        } catch (e) {
+            next(e)
+        }
+    })
+
+    return app
+}
+
 async function createDevServer() {
     const app = express()
 
@@ -27,10 +51,10 @@ async function createDevServer() {
             const templateHtml = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8')
 
             // hot-module replacement
-            const template = await vite.transformIndexHtml(res.originalUrl, templateHtml)
+            const template = await vite.transformIndexHtml(req.originalUrl, templateHtml)
             const { render } = await vite.ssrLoadModule('/src/entry-server.jsx')
 
-            const appHtml = await render()
+            const appHtml = await render(req)
 
             // replace placeholder string ('ssr-outlet') with our rendered html
             const html = template.replace(`<!--ssr-outlet-->`, appHtml)
@@ -45,5 +69,12 @@ async function createDevServer() {
     return app
 }
 
-const app = await createDevServer()
-app.listen(process.env.PORT, () => console.log(`ssr dev server running on http://localhost:${process.env.PORT}`))
+if (process.env.NOVE_ENV === 'production') {
+    const app = await createProdServer()
+    app.listen(process.env.PORT, () =>
+        console.log(`ssr production server running on http://localhost:${process.env.PORT}`),
+    )
+} else {
+    const app = await createDevServer()
+    app.listen(process.env.PORT, () => console.log(`ssr dev server running on http://localhost:${process.env.PORT}`))
+}
